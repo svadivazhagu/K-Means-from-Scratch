@@ -27,18 +27,8 @@ plt.scatter(xCoords, yCoords)
 #plt.show()
 
 
-#Class Point that is a data point (x,y)
+
 zippedPoints = []
-
-
-
-# class Cluster:
-#     def __init__(self, id, dataPoints ):
-#         self.id = id
-#         self.dataPoints = []
-
-
-
 
 
 
@@ -58,29 +48,23 @@ def clusterSet(k):
         #make point list that is k lists long where each list is 2 elements (x,y)
         #initialize k number of clusters, each cluster = (x,y) where f(-10)<=x,y<=f(10)
         for i in range(k):
-            allClusters.append([[random.uniform(-5, 5), random.uniform(-5, 5)]])
-        print(allClusters)
+            allClusters.append([[random.uniform(-1.1, 1.1), random.uniform(-1.5, 1.5)]])
+     #   print(allClusters)
 
 
 #If wanna modify cluster size change this value here (Default 3):
-clusterSet(3)
+clusterSet(10)
 zippedPoints  = list(zip(xCoords, yCoords))
-
+#print(np.mean(zippedPoints))
 
 xyZip = []
 def shortestDistance():
     distanceList = []
     shortestCluster = 0
     for i in range(len(allClusters)):
-        # allXClusters.append(allClusters[i][0][0])
-        # allYClusters.append(allClusters[i][0][1])
-        #xyZip.append(list(zip(allXClusters[i][0][0], allYClusters[i][0][1])))
         clusterX = [(allClusters[i][0][0])]
         clusterY = [(allClusters[i][0][1])]
         xyZip.append(list(zip(clusterX, clusterY)))
-    print(xyZip[0][0][0])
-   # print(xyZip[0])
-  #  print(xyZip[0], zippedPoints[0])
     for point in range(len(zippedPoints)):
         for i in range(len(allClusters)):
             distance = math.sqrt(((xyZip[i][0][0] - zippedPoints[point][0]) ** 2)  + ((xyZip[i][0][1] - zippedPoints[point][1]) ** 2))
@@ -89,12 +73,56 @@ def shortestDistance():
         print(distanceList, point, shortestCluster)
         distanceList.clear()
         xyZip[shortestCluster].append(zippedPoints[point])
-    print(xyZip)
-    print(len(xyZip[0]))
-   # xyZip.insert(shortestCluster, point)
 
 
 
 shortestDistance()
+
+#once the initial clustering is complete, need to start the r
+def recalcClusters():
+    for i in range(len(xyZip)):
+        for point in range(len(xyZip[i])):
+            sumX = 0
+            sumY = 0
+            sumX += xyZip[i][point][0]
+            sumY += xyZip[i][point][1]
+        #    print(sumX, sumY)
+        sumX = [sumX / len(xyZip[i])]
+        sumY = [sumY / len(xyZip[i])]
+        sumX = list(zip(sumX, sumY))
+        xyZip.pop([i][0])
+        xyZip.insert([i][0], sumX)
+
+def calcItemsInList():
+    itemsInList = 0
+    for i in range(len(xyZip)):
+        for point in range(len(xyZip[i])):
+            itemsInList+=1
+    print(itemsInList)
+
+calcItemsInList()
+recalcClusters()
+calcItemsInList()
+#recalculation after the first averaging
+def continuousRecalculation():
+    distanceList = []
+    shortestCluster = 0
+    for i in range(len(xyZip)):
+        for point in range(len(zippedPoints)):
+            for cluster in range(len(xyZip)):
+                distance = math.sqrt(((xyZip[cluster][0][0] - zippedPoints[point][0]) ** 2) + ((xyZip[cluster][0][1] - zippedPoints[point][1]) ** 2))
+                distanceList.append(distance)
+                shortestCluster = distanceList.index(min(distanceList))
+            distanceList.clear()
+            del xyZip[cluster][1:len(xyZip[cluster])]
+            xyZip[shortestCluster].append(zippedPoints[point])
+
+
+
+continuousRecalculation()
+calcItemsInList()
+print(len(zippedPoints))
+
+
 
 
