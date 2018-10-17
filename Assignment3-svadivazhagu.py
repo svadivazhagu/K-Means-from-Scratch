@@ -1,10 +1,11 @@
 #A3 by svadivazhagu for CS-534 Fall'2018
 
 #Problem 1, Implementing K-Means on cluster_data.txt
+import pandas as pd
 import numpy as np
-import random as random
-from matplotlib import pyplot as plt
-import math
+import matplotlib.pyplot as plt
+import random
+
 
 xCoords = []
 yCoords = []
@@ -23,106 +24,87 @@ def prepData():
         yCoords.append(float(lines[i][1]))
 
 prepData()
-plt.scatter(xCoords, yCoords)
-#plt.show()
-
-
-
-zippedPoints = []
-
-
-
-#Clusters list that holds each cluster.
-eachCluster = [zippedPoints]
-allClusters = []
-#Clustering function that implements k-means on user-specified integer k clusters
-def clusterSet(k):
-    #list distances contains the values of each data point being compared to the clusters.
-    #to find the shortest distance (clustering) from point to centroid, Euclid. dist. and store value in array
-    #iteratively. Then, take min(distances[]) and then fetch the indice via .index(shortestDistance), then
-    #add
-
-
-    distances = []
-    if (isinstance(k, int)):
-        #make point list that is k lists long where each list is 2 elements (x,y)
-        #initialize k number of clusters, each cluster = (x,y) where f(-10)<=x,y<=f(10)
-        for i in range(k):
-            allClusters.append([[random.uniform(-1.1, 1.1), random.uniform(-1.5, 1.5)]])
-     #   print(allClusters)
-
-
-#If wanna modify cluster size change this value here (Default 3):
-clusterSet(10)
 zippedPoints  = list(zip(xCoords, yCoords))
-#print(np.mean(zippedPoints))
-
-xyZip = []
-def shortestDistance():
-    distanceList = []
-    shortestCluster = 0
-    for i in range(len(allClusters)):
-        clusterX = [(allClusters[i][0][0])]
-        clusterY = [(allClusters[i][0][1])]
-        xyZip.append(list(zip(clusterX, clusterY)))
-    for point in range(len(zippedPoints)):
-        for i in range(len(allClusters)):
-            distance = math.sqrt(((xyZip[i][0][0] - zippedPoints[point][0]) ** 2)  + ((xyZip[i][0][1] - zippedPoints[point][1]) ** 2))
-            distanceList.append(distance)
-            shortestCluster = distanceList.index(min(distanceList))
-        print(distanceList, point, shortestCluster)
-        distanceList.clear()
-        xyZip[shortestCluster].append(zippedPoints[point])
+plt.scatter(xCoords, yCoords)
+plt.show()
 
 
+df = pd.DataFrame({
+    'x': xCoords,
+    'y': yCoords
+})
 
-shortestDistance()
+np.random.seed(200)
+k = 4
+# centroids[i] = [x, y]
+centroids = {
+    i + 1: [random.randint(1, 2), random.uniform(-0.005, 0.005 )]
+    for i in range(k)
+}
 
-#once the initial clustering is complete, need to start the r
-def recalcClusters():
-    for i in range(len(xyZip)):
-        for point in range(len(xyZip[i])):
-            sumX = 0
-            sumY = 0
-            sumX += xyZip[i][point][0]
-            sumY += xyZip[i][point][1]
-        #    print(sumX, sumY)
-        sumX = [sumX / len(xyZip[i])]
-        sumY = [sumY / len(xyZip[i])]
-        sumX = list(zip(sumX, sumY))
-        xyZip.pop([i][0])
-        xyZip.insert([i][0], sumX)
+colmap = {1: 'red', 2: 'green', 3: 'blue', 4:'yellow', 5:'purple'}
 
-def calcItemsInList():
-    itemsInList = 0
-    for i in range(len(xyZip)):
-        for point in range(len(xyZip[i])):
-            itemsInList+=1
-    print(itemsInList)
+## Assignment Stage
 
-calcItemsInList()
-recalcClusters()
-calcItemsInList()
-#recalculation after the first averaging
-def continuousRecalculation():
-    distanceList = []
-    shortestCluster = 0
-    for i in range(len(xyZip)):
-        for point in range(len(zippedPoints)):
-            for cluster in range(len(xyZip)):
-                distance = math.sqrt(((xyZip[cluster][0][0] - zippedPoints[point][0]) ** 2) + ((xyZip[cluster][0][1] - zippedPoints[point][1]) ** 2))
-                distanceList.append(distance)
-                shortestCluster = distanceList.index(min(distanceList))
-            distanceList.clear()
-            del xyZip[cluster][1:len(xyZip[cluster])]
-            xyZip[shortestCluster].append(zippedPoints[point])
+def assignment(df, centroids):
+    for i in centroids.keys():
+        # sqrt((x1 - x2)^2 - (y1 - y2)^2)
+        df['distance_from_{}'.format(i)] = (
+            np.sqrt(
+                (df['x'] - centroids[i][0]) ** 2
+                + (df['y'] - centroids[i][1]) ** 2
+            )
+        )
+    centroid_distance_cols = ['distance_from_{}'.format(i) for i in centroids.keys()]
+    df['closest'] = df.loc[:, centroid_distance_cols].idxmin(axis=1)
+    df['closest'] = df['closest'].map(lambda x: int(x.lstrip('distance_from_')))
+    df['color'] = df['closest'].map(lambda x: colmap[x])
+    return df
+
+df = assignment(df, centroids)
 
 
+## Update Stage
 
-continuousRecalculation()
-calcItemsInList()
-print(len(zippedPoints))
+import copy
+
+old_centroids = copy.deepcopy(centroids)
 
 
+def update(k):
+    for i in centroids.keys():
+        centroids[i][0] = np.mean(df[df['closest'] == i]['x'])
+        centroids[i][1] = np.mean(df[df['closest'] == i]['y'])
+    return k
 
 
+centroids = update(centroids)
+
+
+## Repeat Assigment Stage
+
+df = assignment(df, centroids)
+
+
+# Continue until all assigned categories don't change any more
+while True:
+    closest_centroids = df['closest'].copy(deep=True)
+    centroids = update(centroids)
+    df = assignment(df, centroids)
+    if closest_centroids.equals(df['closest']):
+        break
+
+fig = plt.figure(figsize=(8, 8))
+plt.scatter(df['x'], df['y'], color=df['color'], alpha=1, edgecolor='k', label = "Data Point")
+for i in centroids.keys():
+    plt.scatter(*centroids[i], color='black', alpha = 1, s = 100, edgecolor = 'white', marker="X", label = "Centroid "+str(i))
+fig.suptitle('After K=' + str(k) + ' Clustering', fontsize=14)
+plt.xlabel('Length', fontsize=12)
+plt.ylabel('Width', fontsize=12)
+plt.legend(loc='lower left')
+plt.show()
+
+print("Note that sometimes, the random initial clustering can lead to having a"
+      " blank centroid in the legend. Just run the program again and it should update within 1 or 2 instances."
+      " Each centroid is marked by an X. It may"
+      "be difficult to see all the centroids.")
