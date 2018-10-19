@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+from sklearn.cluster import AgglomerativeClustering
+#%matplotlib inline NEED FOR JUPYTER
 
 
 xCoords = []
@@ -25,8 +27,8 @@ def prepData():
 
 prepData()
 zippedPoints  = list(zip(xCoords, yCoords))
-plt.scatter(xCoords, yCoords)
-plt.show()
+#plt.scatter(xCoords, yCoords)
+#plt.show()
 
 
 df = pd.DataFrame({
@@ -102,9 +104,14 @@ fig.suptitle('After K=' + str(k) + ' Clustering', fontsize=14)
 plt.xlabel('Length', fontsize=12)
 plt.ylabel('Width', fontsize=12)
 plt.legend(loc='lower left')
-plt.show()
+#plt.show()
 
 print("Note that sometimes, the random initial clustering can lead to having a"
       " blank centroid in the legend. Just run the program again and it should update within 1 or 2 instances."
       " Each centroid is marked by an X. It may"
       "be difficult to see all the centroids.")
+
+
+#Problem 2
+
+
