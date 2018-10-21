@@ -1,8 +1,18 @@
 from sklearn.svm import SVC
 from sklearn.ensemble import RandomForestClassifier
-from DataHandler import load_data
 
 
+def load_data():
+  data = []
+  with open("best2.csv", 'r') as theFile:
+      lines = theFile.read().split('\n')
+      for i, l in enumerate(lines):
+          current = []
+          for attr in l.split(',')[:25]:
+              current.append(float(attr))
+          data.append(current)
+
+  return data
 def f_measure(predictor, X, y):
 
   true_positive = 0
@@ -40,16 +50,15 @@ test_y = [d[24] for d in data[int(len(data) * 0.2):]]
 clf = SVC(kernel='linear')
 clf.fit(train_X, train_y)
 
-print("SVC linear training set f-measure: ", f_measure(clf, train_X, train_y))
-print("SVC linear test set f-measure: ", f_measure(clf, test_X, test_y))
+print("SVC Linear Kernel Training set f-measure: " + str(f_measure(clf, train_X, train_y)))
+print("SVC Linear Kernel Test set f-measure: " + str(f_measure(clf, test_X, test_y))+ '\n \n')
 
 
 clf = SVC(kernel='rbf')
 clf.fit(train_X, train_y)
 
-print("SVC rbf training set f-measure: ", f_measure(clf, train_X, train_y))
-print("SVC rbf test set f-measure: ", f_measure(clf, test_X, test_y))
-
+print("SVC RBF training set f-measure: " + str(f_measure(clf, train_X, train_y)))
+print("SVC RBF test set f-measure: " + str(f_measure(clf, test_X, test_y)) + '\n \n')
 
 clf = RandomForestClassifier()
 clf.fit(train_X, train_y)
