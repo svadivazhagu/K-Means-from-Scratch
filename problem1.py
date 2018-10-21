@@ -26,6 +26,7 @@ def prepData():
         yCoords.append(float(lines[i][1]))
 
 prepData()
+
 zippedPoints  = list(zip(xCoords, yCoords))
 #plt.scatter(xCoords, yCoords)
 #plt.show()
@@ -37,20 +38,19 @@ df = pd.DataFrame({
 })
 
 np.random.seed(200)
-k = 4
+k = 6
 # centroids[i] = [x, y]
 centroids = {
     i + 1: [random.randint(1, 2), random.uniform(-0.005, 0.005 )]
     for i in range(k)
 }
 
-colmap = {1: 'red', 2: 'green', 3: 'blue', 4:'yellow', 5:'purple'}
+colmap = {1: 'red', 2: 'green', 3: 'blue', 4:'yellow', 5:'purple', 6:'black'}
 
-## Assignment Stage
+#Assigning points to dataset based on Euclidean Distance
 
 def assignment(df, centroids):
     for i in centroids.keys():
-        # sqrt((x1 - x2)^2 - (y1 - y2)^2)
         df['distance_from_{}'.format(i)] = (
             np.sqrt(
                 (df['x'] - centroids[i][0]) ** 2
@@ -66,8 +66,7 @@ def assignment(df, centroids):
 df = assignment(df, centroids)
 
 
-## Update Stage
-
+#Update the centroids based on cluster's points.
 import copy
 
 old_centroids = copy.deepcopy(centroids)
@@ -83,12 +82,11 @@ def update(k):
 centroids = update(centroids)
 
 
-## Repeat Assigment Stage
-
+#Assignment again.
 df = assignment(df, centroids)
 
 
-# Continue until all assigned categories don't change any more
+# Stop only when the change from cluster to cluster is negligible.
 while True:
     closest_centroids = df['closest'].copy(deep=True)
     centroids = update(centroids)
@@ -104,14 +102,12 @@ fig.suptitle('After K=' + str(k) + ' Clustering', fontsize=14)
 plt.xlabel('Length', fontsize=12)
 plt.ylabel('Width', fontsize=12)
 plt.legend(loc='lower left')
-#plt.show()
+plt.show()
 
 print("Note that sometimes, the random initial clustering can lead to having a"
       " blank centroid in the legend. Just run the program again and it should update within 1 or 2 instances."
       " Each centroid is marked by an X. It may"
       "be difficult to see all the centroids.")
 
-
-#Problem 2
 
 

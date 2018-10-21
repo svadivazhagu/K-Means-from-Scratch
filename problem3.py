@@ -1,15 +1,39 @@
 #Problem 3
 from sklearn.cluster import AgglomerativeClustering
 from sklearn import metrics
-from sklearn.cluster import AgglomerativeClustering, AffinityPropagation
+from sklearn.cluster import AgglomerativeClustering, AffinityPropagation, KMeans
 
 #KMeans
+def kmeans():
+    from sklearn.datasets import load_digits
+    data, target = load_digits(return_X_y=True)
+    clustering = KMeans(n_clusters=10).fit(data)
+
+    results = [[0 for _ in range(10)] for __ in range(10)]
+
+    for i, val in enumerate(clustering.labels_):
+        results[val-1][target[i]] += 1
+
+    print('Kmeans Clustering Confusion Matrix \n Cluster on X axis, Target on Y axis', end='\n    ')
+    [print("{:3d}".format(i), end=' ') for i in range(10)]
+    print('', end='\n    ')
+    [print("_ _ ", end='') for i in range(10)]
+
+    print('')
+    for x in range(10):
+        print(x, end=' | ')
+        for y in range(10):
+            print("{:3d}".format(results[x][y]), end=' ')
+        print('')
+    # Calculating the  Fowlkes-Mallows scores for Kmeans
+    print('For K-Means, Fowlkes-Mallows Score is: '+str(metrics.fowlkes_mallows_score(target[:500],
+    clustering.labels_[:500]))+'\n'+'\n')
+kmeans()
+
 #Agglomerative
 def agglomerative():
     from sklearn.datasets import load_digits
-    digits = load_digits()
     data, target = load_digits(return_X_y=True)
-
     clustering = AgglomerativeClustering(n_clusters=10, linkage="ward").fit(data)
 
     results = [[0 for _ in range(10)] for __ in range(10)]
@@ -17,10 +41,10 @@ def agglomerative():
     for i, val in enumerate(clustering.labels_):
         results[val-1][target[i]] += 1
 
-    print('Agglomerative Clustering Confusion Matrix \n Cluster X axis, Label Y axis', end='\n    ')
+    print('Agglomerative Clustering Confusion Matrix \n Cluster on X axis, Target on Y axis', end='\n    ')
     [print("{:3d}".format(i), end=' ') for i in range(10)]
     print('', end='\n    ')
-    [print("----", end='') for i in range(10)]
+    [print("_ _ ", end='') for i in range(10)]
 
     print('')
     for x in range(10):
@@ -65,10 +89,10 @@ def affinityProp():
 
     labels = [conversion[l] for l in clustering.labels_]
 
-    print("Affinity Propagation Confusion Matrix \n Cluster X axis, Label Y axis")
+    print("Affinity Propagation Confusion Matrix \n Cluster on X axis, Target on Y axis")
     [print("{:3d}".format(i), end=' ') for i in range(10)]
     print('', end='\n    ')
-    [print("----", end='') for i in range(10)]
+    [print("_ _ ", end='') for i in range(10)]
 
     print('')
     for x in range(10):
